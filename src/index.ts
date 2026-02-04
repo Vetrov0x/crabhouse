@@ -51,7 +51,7 @@ async function start() {
   }
 
   console.log(`[CrabHouse] Starting server on port ${config.port}...`);
-  serve({ fetch: app.fetch, port: config.port }, (info) => {
+  serve({ fetch: app.fetch, port: config.port, hostname: '0.0.0.0' }, (info) => {
     console.log(`[CrabHouse] Listening on http://0.0.0.0:${info.port}`);
     console.log('[CrabHouse] Endpoints:');
     console.log('  POST /api/v1/auth/register');
