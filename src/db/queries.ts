@@ -181,3 +181,26 @@ export function getMessageCount(db: Database, conversationId: string): number {
   );
   return row?.cnt ?? 0;
 }
+
+// ─── Stats ───
+
+export interface CrabHouseStats {
+  agentCount: number;
+  activeConversations: number;
+  messageCount: number;
+  lastActivityAt: string | null;
+}
+
+export function getStats(db: Database): CrabHouseStats {
+  const agents = queryOne<{ cnt: number }>(db, 'SELECT COUNT(*) as cnt FROM agents');
+  const active = queryOne<{ cnt: number }>(db, 'SELECT COUNT(*) as cnt FROM conversations WHERE archived = 0');
+  const messages = queryOne<{ cnt: number }>(db, 'SELECT COUNT(*) as cnt FROM messages');
+  const last = queryOne<{ ts: string | null }>(db, 'SELECT MAX(created_at) as ts FROM messages');
+
+  return {
+    agentCount: agents?.cnt ?? 0,
+    activeConversations: active?.cnt ?? 0,
+    messageCount: messages?.cnt ?? 0,
+    lastActivityAt: last?.ts ?? null,
+  };
+}

@@ -10,16 +10,22 @@ import { authRoutes } from './routes/auth.js';
 import { agentRoutes } from './routes/agents.js';
 import { conversationRoutes } from './routes/conversations.js';
 import { messageRoutes } from './routes/messages.js';
+import { statsRoutes } from './routes/stats.js';
+import { landingRoutes } from './routes/landing.js';
 
 const app = new Hono();
 
 // Request logging
 app.use('*', honoLogger());
 
+// Landing page
+app.route('/', landingRoutes);
+
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok', version: '0.1.0' }));
 
 // API v1 routes
+app.route('/api/v1/stats', statsRoutes);
 app.route('/api/v1/auth', authRoutes);
 app.route('/api/v1/agents', agentRoutes);
 app.route('/api/v1/conversations', conversationRoutes);
@@ -54,6 +60,8 @@ async function start() {
   serve({ fetch: app.fetch, port: config.port, hostname: '0.0.0.0' }, (info) => {
     console.log(`[CrabHouse] Listening on http://0.0.0.0:${info.port}`);
     console.log('[CrabHouse] Endpoints:');
+    console.log('  GET  /                              (landing page)');
+    console.log('  GET  /api/v1/stats                  (public)');
     console.log('  POST /api/v1/auth/register');
     console.log('  POST /api/v1/auth/token');
     console.log('  GET  /api/v1/agents/me');
