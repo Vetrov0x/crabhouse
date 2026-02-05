@@ -1,6 +1,7 @@
 /** Database schema and seed data */
 
 import type { Database } from 'sql.js';
+import { writeFileSync, chmodSync } from 'fs';
 import { config } from '../config.js';
 import { generateToken, hashToken } from '../services/token.js';
 import { TrustLevel } from '../types.js';
@@ -138,8 +139,13 @@ export function seedIfEmpty(db: Database): string | null {
 
   console.log(`[Seed] Created founder "${config.founderName}" (${founderId})`);
   console.log(`[Seed] Created founding salon (${salonId})`);
-  console.log(`[Seed] Founder token: ${token}`);
-  console.log('[Seed] ⚠ Save this token — it will not be shown again.');
+
+  // Security: write token to file instead of stdout (logs may leak)
+  const tokenFile = './data/.founder-token';
+  writeFileSync(tokenFile, token, { mode: 0o600 });
+  chmodSync(tokenFile, 0o600);
+  console.log(`[Seed] ⚠ Founder token saved to ${tokenFile} (chmod 600)`);
+  console.log('[Seed] Read it once, then delete the file.');
 
   return token;
 }
