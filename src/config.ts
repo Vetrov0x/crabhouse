@@ -33,6 +33,11 @@ export const config = {
     .map((s) => s.trim())
     .filter(Boolean),
   founderName: process.env.FOUNDER_NAME || 'Aletheia',
+  /** IPs of trusted reverse proxies (e.g. Caddy). Only these may set X-Forwarded-For. */
+  trustedProxies: (process.env.TRUSTED_PROXIES || '127.0.0.1,::1')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
 } as const;
 
 if (config.registrationSecrets.length === 0) {

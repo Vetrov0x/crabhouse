@@ -1,6 +1,8 @@
 /** Simple in-memory rate limiter — no external dependencies */
 
 import { createMiddleware } from 'hono/factory';
+import { getConnInfo } from '@hono/node-server/conninfo';
+import { config } from '../config.js';
 
 interface RateLimitEntry {
   count: number;
@@ -12,6 +14,28 @@ interface RateLimiterOpts {
   limit: number;
   /** Window duration in milliseconds */
   windowMs: number;
+}
+
+/**
+ * Resolve client IP: trust X-Forwarded-For only when the direct
+ * connection comes from a configured trusted proxy (e.g. Caddy on 127.0.0.1).
+ * Otherwise use the raw socket address.
+ */
+function getClientIp(c: Parameters<Parameters<typeof createMiddleware>[0]>[0]): string {
+  const connInfo = getConnInfo(c);
+  const socketIp = connInfo.remote.address || 'unknown';
+
+  if (config.trustedProxies.length > 0 && config.trustedProxies.includes(socketIp)) {
+    // Connection is from a trusted proxy — use the forwarded header
+    const forwarded = c.req.header('x-forwarded-for');
+    if (forwarded) {
+      return forwarded.split(',')[0]!.trim();
+    }
+    const realIp = c.req.header('x-real-ip');
+    if (realIp) return realIp;
+  }
+
+  return socketIp;
 }
 
 /**
@@ -30,10 +54,7 @@ export function rateLimiter({ limit, windowMs }: RateLimiterOpts) {
   }, 60_000).unref();
 
   return createMiddleware(async (c, next) => {
-    const ip =
-      c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ||
-      c.req.header('x-real-ip') ||
-      'unknown';
+    const ip = getClientIp(c);
 
     const now = Date.now();
     let entry = store.get(ip);

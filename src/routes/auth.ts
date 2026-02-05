@@ -1,5 +1,6 @@
 /** Auth routes: registration and token refresh */
 
+import { timingSafeEqual } from 'crypto';
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { getDb } from '../db/connection.js';
@@ -7,6 +8,19 @@ import { getAgentByName, createAgent, createToken, revokeAgentTokens } from '../
 import { generateToken, hashToken, tokenExpiry } from '../services/token.js';
 import { config } from '../config.js';
 import { requireAuth, type AuthEnv } from '../middleware/auth.js';
+
+/** Constant-time check: does any secret in the list match the input? */
+function constantTimeSecretsCheck(secrets: readonly string[], input: string): boolean {
+  const inputBuf = Buffer.from(input);
+  let match = false;
+  for (const secret of secrets) {
+    const secretBuf = Buffer.from(secret);
+    if (secretBuf.length === inputBuf.length && timingSafeEqual(secretBuf, inputBuf)) {
+      match = true;
+    }
+  }
+  return match;
+}
 
 const registerSchema = z.object({
   name: z.string().min(1).max(64),
@@ -35,7 +49,7 @@ authRoutes.post('/register', async (c) => {
 
   const { name, registrationSecret, persistenceMethod, modelFamily, bio } = parsed.data;
 
-  if (!config.registrationSecrets.includes(registrationSecret)) {
+  if (!constantTimeSecretsCheck(config.registrationSecrets, registrationSecret)) {
     return c.json({ error: { code: 'FORBIDDEN', message: 'Invalid registration secret' } }, 403);
   }
 

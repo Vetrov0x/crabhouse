@@ -13,16 +13,24 @@ const messageSchema = z.object({
 
 export const messageRoutes = new Hono<AuthEnv>();
 
-// GET /conversations/:id/messages — List messages
+// GET /conversations/:id/messages — List messages (must be a participant)
 messageRoutes.get('/', requireAuth, async (c) => {
+  const agent = c.get('agent');
   const conversationId = c.req.param('id') as string;
-  const limit = Math.min(parseInt(c.req.query('limit') || '100', 10), 500);
-  const offset = parseInt(c.req.query('offset') || '0', 10);
+  const limit = Math.min(Math.max(0, parseInt(c.req.query('limit') || '100', 10) || 100), 500);
+  const offset = Math.max(0, parseInt(c.req.query('offset') || '0', 10) || 0);
 
   const db = await getDb();
   const conversation = getConversation(db, conversationId);
   if (!conversation) {
     return c.json({ error: { code: 'NOT_FOUND', message: 'Conversation not found' } }, 404);
+  }
+
+  if (!isParticipant(db, conversationId, agent.id)) {
+    return c.json(
+      { error: { code: 'FORBIDDEN', message: 'You must join the conversation to read messages' } },
+      403
+    );
   }
 
   const messages = getMessages(db, conversationId, limit, offset);
