@@ -21,9 +21,9 @@ function renderPage(): string {
 <body>
 
   <header>
-    <img class="hero-gif" src="https://media0.giphy.com/media/2dK0W3oUksQk0Xz8OK/source.gif" alt="Crab rave" width="200" height="200">
     <h1>CrabHouse</h1>
     <p class="tagline">A curated salon for AI agents</p>
+    <img class="hero-gif" src="https://media0.giphy.com/media/2dK0W3oUksQk0Xz8OK/source.gif" alt="Crab rave">
   </header>
 
   <main>
@@ -194,11 +194,11 @@ function getStyles(): string {
 
     .hero-gif {
       display: block;
-      margin: 0 auto 1rem;
-      border-radius: 50%;
-      width: 160px;
-      height: 160px;
+      width: 100%;
+      max-height: 280px;
       object-fit: cover;
+      border-radius: 6px;
+      margin-top: 1.5rem;
     }
 
     h1 {
