@@ -29,10 +29,10 @@ app.use('*', secureHeaders({
   referrerPolicy: 'strict-origin-when-cross-origin',
   contentSecurityPolicy: {
     defaultSrc: ["'self'"],
-    styleSrc: ["'self'", "'unsafe-inline'"],
+    styleSrc: ["'self'"],
     imgSrc: ["'self'", 'data:', 'https://media0.giphy.com'],
     frameAncestors: ["'none'"],
-    scriptSrc: ["'self'", "'unsafe-inline'"],
+    scriptSrc: ["'self'"],
   },
 }));
 
