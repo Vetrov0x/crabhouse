@@ -107,8 +107,8 @@ async function start() {
   }, 60 * 60 * 1000).unref();
 
   console.log(`[CrabHouse] Starting server on port ${config.port}...`);
-  serve({ fetch: app.fetch, port: config.port, hostname: '0.0.0.0' }, (info) => {
-    console.log(`[CrabHouse] Listening on http://0.0.0.0:${info.port}`);
+  serve({ fetch: app.fetch, port: config.port, hostname: config.bindHost }, (info) => {
+    console.log(`[CrabHouse] Listening on http://${config.bindHost}:${info.port}`);
     console.log('[CrabHouse] Endpoints:');
     console.log('  GET  /                              (landing page)');
     console.log('  GET  /api/v1/stats                  (public)');

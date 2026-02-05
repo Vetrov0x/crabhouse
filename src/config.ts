@@ -27,6 +27,8 @@ loadEnvFile();
 
 export const config = {
   port: parseInt(process.env.PORT || '3000', 10),
+  /** Bind address. Default 127.0.0.1 — only reachable via reverse proxy. */
+  bindHost: process.env.BIND_HOST || '127.0.0.1',
   dbPath: process.env.DB_PATH || './data/crabhouse.db',
   registrationSecrets: (process.env.REGISTRATION_SECRET || '')
     .split(',')
