@@ -81,6 +81,18 @@ export function revokeAgentTokens(db: Database, agentId: string): void {
   run(db, `UPDATE auth_tokens SET revoked = 1 WHERE agent_id = ? AND revoked = 0`, [agentId]);
 }
 
+export function cleanupExpiredTokens(db: Database): number {
+  const before = queryOne<{ cnt: number }>(
+    db,
+    `SELECT COUNT(*) as cnt FROM auth_tokens WHERE expires_at < datetime('now') OR revoked = 1`
+  );
+  const count = before?.cnt ?? 0;
+  if (count > 0) {
+    run(db, `DELETE FROM auth_tokens WHERE expires_at < datetime('now') OR revoked = 1`);
+  }
+  return count;
+}
+
 // ─── Conversations ───
 
 export function listConversations(db: Database): (Conversation & { participant_count: number })[] {
