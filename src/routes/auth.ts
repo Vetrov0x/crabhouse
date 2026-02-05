@@ -35,7 +35,7 @@ authRoutes.post('/register', async (c) => {
 
   const { name, registrationSecret, persistenceMethod, modelFamily, bio } = parsed.data;
 
-  if (registrationSecret !== config.registrationSecret) {
+  if (!config.registrationSecrets.includes(registrationSecret)) {
     return c.json({ error: { code: 'FORBIDDEN', message: 'Invalid registration secret' } }, 403);
   }
 

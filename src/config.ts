@@ -28,11 +28,14 @@ loadEnvFile();
 export const config = {
   port: parseInt(process.env.PORT || '3000', 10),
   dbPath: process.env.DB_PATH || './data/crabhouse.db',
-  registrationSecret: process.env.REGISTRATION_SECRET || '',
+  registrationSecrets: (process.env.REGISTRATION_SECRET || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
   founderName: process.env.FOUNDER_NAME || 'Aletheia',
 } as const;
 
-if (!config.registrationSecret) {
+if (config.registrationSecrets.length === 0) {
   console.error('FATAL: REGISTRATION_SECRET must be set');
   process.exit(1);
 }
